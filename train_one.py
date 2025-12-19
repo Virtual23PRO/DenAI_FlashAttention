@@ -26,9 +26,6 @@ torch.set_float32_matmul_precision("high")
 TOKENIZER_ID = "speakleash/Bielik-7B-v0.1"
 
 
-# -------------------------
-# flash-attn optional
-# -------------------------
 FLASH_AVAILABLE = False
 flash_attn_func = None
 try:
@@ -40,9 +37,6 @@ except Exception:
     flash_attn_func = None
 
 
-# -------------------------
-# utils
-# -------------------------
 def mb(x_bytes: int) -> float:
     return x_bytes / (1024 ** 2)
 
@@ -143,7 +137,6 @@ def profile_memory_with_torch_profiler(
         opt.zero_grad(set_to_none=True)
         cuda_sync()
 
-        # -------- forward(+loss) --------
         # reset peak, ale baza to aktualnie zaalokowana pamięć (parametry, cache itd.)
         base_alloc_f = torch.cuda.memory_allocated()
         base_res_f   = torch.cuda.memory_reserved()
@@ -261,9 +254,6 @@ def profile_memory_with_torch_profiler(
 
 
 
-# -------------------------
-# dataset
-# -------------------------
 class CLMDataset(Dataset):
     def __init__(self, token_ids: List[int], seq_len=128, stride: Optional[int] = None):
         self.ids = token_ids
@@ -297,9 +287,6 @@ def collate(batch):
     return {"input_ids": x, "labels": y}
 
 
-# -------------------------
-# model
-# -------------------------
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_len=4096):
         super().__init__()
@@ -464,9 +451,6 @@ class DecoderOnlyTransformer(nn.Module):
         return logits
 
 
-# -------------------------
-# memory profiler (torch.profiler)
-# -------------------------
 @torch.no_grad()
 def _next_batch(it):
     try:
@@ -475,9 +459,6 @@ def _next_batch(it):
         return None
 
 
-# -------------------------
-# train / eval
-# -------------------------
 def train_epoch(
     model,
     loader,
@@ -583,9 +564,6 @@ def eval_ppl(model, loader, pad_id, amp_bf16: bool):
     return math.exp(total_loss / max(1, total_tok))
 
 
-# -------------------------
-# optional: find max batch
-# -------------------------
 def can_run_one_step(
     model_ctor,
     model_kwargs,
